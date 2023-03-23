@@ -6,34 +6,69 @@ import {
   Delete,
   Put,
   Param,
+  Query,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { CreateToDoDto } from './Dto/CreateToDoDto';
-import { Todos, TodosDocument } from './schemas/todo.schemas';
+import { Todos } from './schemas/todo.schemas';
+import { AuthService } from './auth/auth.service';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { SingUpDto } from './Dto/SingUpDto';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private authService: AuthService,
+  ) {}
+  @Post('auth/login')
+  async login(@Body() singin: SingUpDto) {
+    return this.authService.login(singin);
+  }
+  @Post('singup')
+  async singup(@Body() singupdto: SingUpDto) {
+    return this.authService.singup(singupdto);
+  }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('sort')
+  getTodoOnDate(@Query('date') date, @Request() req): Promise<Todos[]> {
+    return this.appService.getTodoOnDate(req.user.userId, date);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get()
-  getAllTodo(): Promise<Todos[]> {
-    return this.appService.getToDos();
+  getAllTodo(@Request() req): Promise<Todos[]> {
+    return this.appService.getToDos(req.user.userId);
   }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  getOneTodo(@Param('id') id: number): Promise<Todos> {
-    return this.appService.getToDo(id);
+  getOneTodo(@Param('id') id: string, @Request() req): Promise<Todos[]> {
+    return this.appService.getToDo(id, req.user.userId);
   }
+
+  @UseGuards(JwtAuthGuard)
   @Post()
-  postToDo(@Body() createToDoDto: CreateToDoDto): Promise<Todos> {
-    return this.appService.postToDo(createToDoDto.text);
+  postToDo(
+    @Body() createToDoDto: CreateToDoDto,
+    @Request() req,
+  ): Promise<Todos> {
+    return this.appService.postToDo(createToDoDto, req.user.userId);
   }
+
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  deleteToDo(@Param('id') id: number): Promise<string> {
-    return this.appService.deleteToDo(id);
+  deleteToDo(@Param('id') id: string, @Request() req): Promise<string> {
+    return this.appService.deleteToDo(id, req.user.userId);
   }
+
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   putToDo(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() createToDoDto: CreateToDoDto,
   ): Promise<Todos> {
     return this.appService.putToDo(id, createToDoDto);
