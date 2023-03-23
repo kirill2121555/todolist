@@ -11,11 +11,12 @@ import {
   Request,
 } from '@nestjs/common';
 import { AppService } from './app.service';
-import { CreateToDoDto } from './Dto/CreateToDoDto';
+import { CreateToDoDto, DateDto } from './Dto/CreateToDoDto';
 import { Todos } from './schemas/todo.schemas';
 import { AuthService } from './auth/auth.service';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { SingUpDto } from './Dto/SingUpDto';
+import { ObjectId } from './Dto/Objectid';
 
 @Controller()
 export class AppController {
@@ -34,8 +35,11 @@ export class AppController {
 
   @UseGuards(JwtAuthGuard)
   @Get('sort')
-  getTodoOnDate(@Query('date') date, @Request() req): Promise<Todos[]> {
-    return this.appService.getTodoOnDate(req.user.userId, date);
+  getTodoOnDate(
+    @Query('date') date: DateDto,
+    @Request() req,
+  ): Promise<Todos[]> {
+    return this.appService.getTodoOnDate(req.user.userId, date.date);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -46,7 +50,8 @@ export class AppController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  getOneTodo(@Param('id') id: string, @Request() req): Promise<Todos[]> {
+  getOneTodo(@Param() id: ObjectId, @Request() req) {
+    console.log('sadasdas');
     return this.appService.getToDo(id, req.user.userId);
   }
 
@@ -61,7 +66,7 @@ export class AppController {
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  deleteToDo(@Param('id') id: string, @Request() req): Promise<string> {
+  deleteToDo(@Param('id') id: ObjectId, @Request() req): Promise<string> {
     return this.appService.deleteToDo(id, req.user.userId);
   }
 

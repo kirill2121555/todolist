@@ -5,6 +5,7 @@ import { Todos, TodosDocument } from './schemas/todo.schemas';
 import { todo } from './type/typeToDo';
 import { CreateToDoDto } from './Dto/CreateToDoDto';
 import { User, UserDocument } from './schemas/user.schema';
+import { ObjectId } from './Dto/Objectid';
 
 @Injectable()
 export class AppService {
@@ -21,12 +22,12 @@ export class AppService {
     return user.todos;
   }
 
-  async getToDo(id: string, userId: string): Promise<Todos[]> {
+  async getToDo(id: ObjectId, userId: string): Promise<User> {
     const user = await this.UserModel.findById(userId, { todos: 1 }).populate({
       path: 'todos',
-      match: { id: id },
+      match: { _id: id.id },
     });
-    return user.todos;
+    return user;
   }
   async postToDo(createToDoDto: CreateToDoDto, userId: string): Promise<Todos> {
     const newToDo = await this.TodosModel.create({
@@ -38,7 +39,7 @@ export class AppService {
     });
     return newToDo;
   }
-  async deleteToDo(id: string, userId: string): Promise<string> {
+  async deleteToDo(id: ObjectId, userId: string): Promise<string> {
     await this.UserModel.findByIdAndUpdate(userId, {
       $pull: { todos: id },
     });
