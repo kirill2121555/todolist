@@ -1,18 +1,16 @@
-import { IsNotEmpty, IsBoolean, IsString } from 'class-validator';
+import { IsNotEmpty, IsBoolean, IsString, IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateToDoDto {
   @IsNotEmpty()
-  text: string;
+  public text: string;
 
+  @IsOptional()
   @IsString()
   date?: string;
 
+  @IsOptional()
   @IsBoolean()
-  status?: boolean;
-}
-
-export class DateDto {
-  @IsNotEmpty()
-  @IsString()
-  date: string;
+  @Transform(({ value }) => value === 'true')
+  done?: boolean;
 }

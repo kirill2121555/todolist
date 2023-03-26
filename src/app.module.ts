@@ -7,16 +7,18 @@ import { Todos, TodosSchema } from './schemas/todo.schemas';
 import { User, UserSchema } from './schemas/user.schema';
 
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    MongooseModule.forRoot(process.env.link),
+    MongooseModule.forRoot(
+      process.env.NODE_ENV === 'test'
+        ? process.env.dbfortest
+        : process.env.link,
+    ),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MongooseModule.forFeature([{ name: Todos.name, schema: TodosSchema }]),
     AuthModule,
-    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

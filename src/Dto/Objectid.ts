@@ -1,6 +1,8 @@
-import { Length } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { Schema as MongooseSchema } from 'mongoose';
 
 export class ObjectId {
-  @Length(24, 24)
-  id: string;
+  @IsString()
+  @IsNotEmpty()
+  id: MongooseSchema.Types.ObjectId;
 }

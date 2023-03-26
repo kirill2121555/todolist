@@ -1,5 +1,4 @@
-import { Injectable } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { Injectable, HttpException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -12,24 +11,15 @@ import { SingUpDto } from 'src/Dto/SingUpDto';
 export class AuthService {
   constructor(
     @InjectModel(User.name) private UserModel: Model<UserDocument>,
-    private usersService: UsersService,
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findOne(username);
-    if (user && user.password === pass) {
-      const { password, ...result } = user;
-      return result;
-    }
-    return null;
-  }
-
   async login(user: SingUpDto) {
-    //const payload = { username: user.username, sub: user.userId };
-    const candidate = await this.UserModel.findOne({ login: user.login });
+    const candidate = await this.UserModel.findOne({
+      login: user.login,
+    }).lean();
     if (!candidate) {
-      return 'user not found';
+      throw new HttpException('User not found.', 401);
     }
     if (await compare(user.password, candidate.password)) {
       return {
@@ -39,13 +29,15 @@ export class AuthService {
         }),
       };
     }
-    return 'password incorrect';
+    throw new HttpException('Incorect login or password.', 401);
   }
 
   async singup(user: SingUpDto) {
-    const condidate = await this.UserModel.findOne({ login: user.login });
+    const condidate = await this.UserModel.findOne({
+      login: user.login,
+    }).lean();
     if (condidate) {
-      return 'login busy';
+      throw new HttpException('Login busy', 400);
     }
     await this.UserModel.create({
       login: user.login,
